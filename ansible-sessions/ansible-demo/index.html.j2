@@ -1,0 +1,15 @@
+<h2>System Report</h2>
+<ul>
+    <li>Hostname: {{ ansible_hostname }} </li>
+    <li>OS: {{ ansible_distribution }} {{ ansible_distribution_version }} </li>
+    <li>IP: {{ ansible_default_ipv4.address }}</li>
+</ul>
+
+server {
+	listen 80 default_server; <br>
+	listen [::]:80 default_server; <br>
+    
+    {% if enable_custom_msg %} <br>
+    Who are you? {{ custom_message }}<br>
+    {% endif %} <br>
+}

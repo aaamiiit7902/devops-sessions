@@ -1,0 +1,16 @@
+- hosts: all
+  become: true
+  # vars:
+  #   welcome_text: hello
+  vars_files:
+    - vars.yaml
+
+  tasks:
+    - name: Install packages
+      apt:
+        name: "{{ web_package }}"
+        state: absent
+    
+    - name: Print Message
+      debug:
+        msg: "{{ welcome_text }}"

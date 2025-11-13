@@ -1,0 +1,3 @@
+---
+# defaults file for roles/security
+db_package: mariadb-server

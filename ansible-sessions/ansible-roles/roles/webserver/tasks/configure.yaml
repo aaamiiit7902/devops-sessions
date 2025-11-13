@@ -1,0 +1,5 @@
+- name: Deploy index.html
+  template:
+    src: index.html.j2
+    dest: "{{ doc_root }}/index.html"
+  notify: Restart nginx

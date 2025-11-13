@@ -1,0 +1,9 @@
+web_package: apache2
+welcome_text: "Hello all welcome to ansible session"
+packages:
+  - git
+  - unzip
+  - nginx
+  - apache2
+enable_custom_msg: false
+custom_message: I am a custom message copied from jinja template

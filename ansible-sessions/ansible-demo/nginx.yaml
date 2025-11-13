@@ -1,0 +1,21 @@
+- hosts: all
+  become: true
+
+  tasks:
+    - name: install nginx
+      apt:
+        name: nginx
+        state: present
+      tags: nginx
+
+    - name: install git
+      apt:
+        name: git
+        state: absent
+      tags: git
+    
+    - name: start nginx
+      service:
+        name: nginx
+        state: started
+      tags: nginx

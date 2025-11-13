@@ -1,0 +1,11 @@
+---
+# tasks file for roles/security
+- name: Install databse Server
+  apt:
+    name: "{{ db_package }}"
+    state: present
+  
+- name: ensure service is started
+  service:
+    name: mysql
+    state: started

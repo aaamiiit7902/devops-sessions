@@ -1,0 +1,5 @@
+- name: Install web packags
+  apt:
+    name: "{{ web_package }}"
+    state: present
+  notify: Restart nginx

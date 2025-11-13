@@ -1,0 +1,29 @@
+- hosts: all
+  become: true
+
+  tasks:
+    - name: Install nginx if Ubuntu
+      apt:
+        name: nginx
+        state: present
+      register: install_result
+    
+    - name: start nginx
+      service:
+        name:  nginx
+        state: started
+      when: install_result.changed
+      notify: Restart nginx
+
+    - name: Update index.html in the server
+      copy:
+        src: index.html
+        dest: /var/www/html/index.html
+      notify: Restart nginx
+
+    
+  handlers:
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted

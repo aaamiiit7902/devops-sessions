@@ -1,0 +1,3 @@
+web_package: nginx
+doc_root: /var/www/html
+web_port: 80

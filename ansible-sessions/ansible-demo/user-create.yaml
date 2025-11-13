@@ -1,0 +1,10 @@
+- hosts: all
+  become: true
+
+  tasks:
+    - name: Add user with password
+      user:
+        name: kratos
+        password: "{{ 'P@ssw0rd' | password_hash('sha512') }}"
+      register: user
+      no_log: true
