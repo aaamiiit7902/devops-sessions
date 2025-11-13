@@ -1,0 +1,102 @@
+pipeline {
+    agent any
+
+    environment {
+        GIT_URL  = 'https://github.com/brutus-platform/codepanda.git'
+        GIT_CRED = 'github-https-token'   // change to your real credentialId
+    }
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo "📥 Checking out branch: ${env.BRANCH_NAME}"
+                git(
+                    url: "${GIT_URL}",
+                    branch: "${env.BRANCH_NAME}",
+                    credentialsId: "${GIT_CRED}"
+                )
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "🔨 Building on branch: ${env.BRANCH_NAME}"
+                sh '''
+                    if [ -f build.sh ]; then
+                      chmod +x build.sh
+                      ./build.sh
+                    else
+                      echo "No build.sh found, doing dummy build"
+                      echo "hello from ${BRANCH_NAME}" > build.out
+                    fi
+                '''
+            }
+        }
+
+        stage('Test') {
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'develop'
+                    expression { return env.BRANCH_NAME?.startsWith('feature/') }
+                }
+            }
+            steps {
+                echo "🧪 Running tests for ${env.BRANCH_NAME}"
+                sh '''
+                    echo "Running unit tests..."
+                    sleep 1
+                    echo "Tests completed ✅"
+                '''
+            }
+        }
+
+        stage('Package') {
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'develop'
+                }
+            }
+            steps {
+                echo "📦 Packaging artifacts for ${env.BRANCH_NAME}"
+                sh '''
+                    mkdir -p dist
+                    echo "artifact from ${BRANCH_NAME} at $(date)" > dist/info.txt
+                '''
+                archiveArtifacts artifacts: 'dist/**', fingerprint: true
+            }
+        }
+
+        stage('Deploy to Dev') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "🚀 Deploying MAIN branch to DEV..."
+                sh '''
+                    echo "Simulating deploy for main..."
+                    # put your real deploy steps here (scp, ansible, kubectl, helm, docker)
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Pipeline for ${env.BRANCH_NAME} succeeded."
+        }
+        failure {
+            echo "❌ Pipeline for ${env.BRANCH_NAME} failed."
+        }
+        always {
+            echo "📄 Finished build for ${env.BRANCH_NAME} at ${new Date()}"
+        }
+    }
+}

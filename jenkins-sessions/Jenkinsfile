@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+
+    environment {
+        GIT_CRED = 'github-https-token'
+        GIT_URL  = 'https://github.com/brutus-platform/codepanda.git'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git(
+                    url: "${GIT_URL}",
+                    branch: 'main',
+                    credentialsId: "${GIT_CRED}"
+                )
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh '''
+                  chmod +x build.sh
+                  ./build.sh
+                '''
+            }
+        }
+
+        stage('Post-Build') {
+            steps {
+                echo 'Build stage completed. You can add tests or archive here.'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Pipeline succeeded'
+        }
+        failure {
+            echo '❌ Pipeline failed'
+        }
+    }
+}

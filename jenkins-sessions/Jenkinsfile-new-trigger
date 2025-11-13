@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+
+    environment {
+        GIT_URL  = 'https://github.com/brutus-platform/codepanda.git'
+        GIT_CRED = 'github-https-token'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // in multibranch, Jenkins already checks out the right ref
+                checkout scm
+                echo "Building: ${env.BRANCH_NAME}"
+                echo "Change author: ${env.CHANGE_AUTHOR}\nChange ID: ${env.CHANGE_ID}"
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh '''
+                    if [ -f build.sh ]; then
+                      chmod +x build.sh
+                      ./build.sh
+                    else
+                      echo "No build.sh, doing dummy build"
+                    fi
+                '''
+            }
+        }
+
+        stage('Tests') {
+            steps {
+                sh '''
+                    echo "Running automated tests..."
+                    sleep 1
+                    echo "Tests passed ✅"
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                // do NOT deploy for PRs
+                expression { return env.CHANGE_ID == null }   // CHANGE_ID is set for PR builds
+                branch 'main'
+            }
+            steps {
+                sh 'echo "Deploying to DEV from main..."'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Build OK for ${env.BRANCH_NAME}"
+            echo "more changes"
+            echo "more changes"
+        }
+        failure {
+            echo "❌ Build FAILED for ${env.BRANCH_NAME}"
+        }
+    }
+}
