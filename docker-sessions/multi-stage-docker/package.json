@@ -1,0 +1,10 @@
+{
+    "name": "multi-stage-docker-demo",
+    "version": "1.0.0",
+    "main": "dist/server.js",
+    "scripts": {
+        "build": "mkdir -p dist && cp src/* dist/",
+        "start": "node dist/server.js",
+        "dev": "node src/server.js"
+    }
+}
