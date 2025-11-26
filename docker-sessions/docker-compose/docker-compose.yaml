@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  app:
+    build: ./app
+    ports: 
+      - "3000:3000"
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+    networks:
+      - backend
+  
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend
+
+volumes:
+  redis-data:
+
+networks:
+  backend:
+    driver: bridge
