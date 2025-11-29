@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-name
+  labels:
+    app: app-name
+spec:
+  type: ClusterIP | NodePort | LoadBalancer | ExternalName
+  selector:
+    app: label-of-Pod
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      nodePort: 30000-32676

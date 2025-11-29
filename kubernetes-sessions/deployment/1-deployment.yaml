@@ -6,7 +6,7 @@ metadata:
     app: nginx
 
 spec:
-  replicas: 10
+  replicas: 3
   revisionHistoryLimit: 2
   strategy:
     type: RollingUpdate
@@ -16,12 +16,10 @@ spec:
   selector:
     matchLabels:
       app: nginx
-      tier: frontend
   template:
     metadata:
       labels:
         app: nginx
-        tier: frontend
     spec:
       containers:
         - name: nginx 
