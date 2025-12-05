@@ -1,0 +1,15 @@
+replicas: 1
+container:
+  name: nginx-container
+  image:
+    name: nginx
+    tag: 1.27-alpine
+  port: 80
+
+service:
+  port: 80
+
+env:
+  enabled: true
+  FLAG: "true"
+  LOG_LEVEL: "false"
