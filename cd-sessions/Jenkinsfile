@@ -59,7 +59,7 @@ pipeline {
             steps {
                 sh '''
                     cd cd-sessions/kubernetes/staging
-                    sed -i "s|replace-this-version|${IMAGE_TAG}|g}" deployment.yaml
+                    sed -i "s|replace-this-version|${IMAGE_TAG}|g" deployment.yaml
                 '''
             }
         }
