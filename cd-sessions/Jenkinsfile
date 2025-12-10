@@ -36,7 +36,9 @@ pipeline {
                     env.IMAGE_TAG = commitID
                 }
                 sh '''
-                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} cd-sessions
+                    whoami
+                    id
+                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -f dockerfile/Dockerfile cd-sessions
                 '''
             }
         }
