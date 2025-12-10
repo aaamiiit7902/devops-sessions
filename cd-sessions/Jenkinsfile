@@ -38,7 +38,8 @@ pipeline {
                 sh '''
                     whoami
                     id
-                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -f dockerfile/Dockerfile cd-sessions
+                    cd cd-sessions
+                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -f dockerfile/Dockerfile .
                 '''
             }
         }
