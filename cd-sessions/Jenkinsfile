@@ -3,7 +3,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = 'dockerhub-creds'
         DOCKERHUB_USERNAME = 'aaamiiit'
-        IMAGE_NAME = '${DOCKERHUB_USERNAME}/cd-app'
+        IMAGE_NAME = "${DOCKERHUB_USERNAME}/cd-app"
         KUBECONFIG = '/var/lib/jenkins/.kube/config'
         DEPLOYMENT_STRATEGY = 'bluegreen' // or canary
         NEW_COLOR = 'blue' // or green
