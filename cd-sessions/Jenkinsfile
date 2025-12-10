@@ -22,7 +22,7 @@ pipeline {
                     cd cd-sessions/app
                     python3 -m venv venv
                     . venv/bin/activate
-                    pip install -r --no-cache-dir requirements.txt
+                    pip install --no-cache-dir -r requirements.txt
 
                     python -c "import server; print('Server module imported successfully')"
                 '''
