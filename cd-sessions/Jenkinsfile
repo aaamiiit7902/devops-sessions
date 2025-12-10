@@ -54,5 +54,35 @@ pipeline {
                 }
             }
         }
+
+        stage('Update Kubernetes Manifests for Staging') {
+            steps {
+                sh '''
+                    cd cd-sessions/kubernetes/staging
+                    sed -i "s|replace-this-version|${IMAGE_TAG}|g}" deployment.yaml
+                '''
+            }
+        }
+
+        stage('Deploy to Staging') {
+            steps {
+                sh '''
+                    echo "Deploying to staging environment"
+                    cd cd-sessions/kubernetes/staging
+                    kubectl apply -f deployment.yaml -n app-staging
+                    kubectl apply -f service.yaml -n app-staging
+
+                    echo "Waiting for deployment to stabilize..."
+                    kubectl rollout status deployment/cd-demo-staging -n app-staging --timeout=120s
+
+                '''
+            }
+        }
+
+        post {
+            always {
+                cleanWs()
+            }
+        }
     }   
 }
