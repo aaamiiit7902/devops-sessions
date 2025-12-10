@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cd-demo-canary
+  namespace: app-production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cd-demo
+      env: production
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: cd-demo
+        env: production
+        track: canary
+      annotations:
+        deployment.kubernetes.io/revision: "v2"
+    spec:
+      containers:
+        - name: cd-demo
+          image: aaamiiit/cd-app:v1
+          ports:
+            - containerPort: 5000
+          env:
+            - name: APP_ENV
+              value: "production"
+            - name: APP_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['deployment.kubernetes.io/revision']
+            - name: APP_COLOR
+              value: "canary"

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cd-demo-canary
+  namespace: app-production
+  labels:
+    app: app-production
+spec:
+  selector:
+    app: cd-demo
+    env: production
+  ports:
+    - port: 80
+      targetPort: 5000
+      nodePort: 30081
+  type: NodePort

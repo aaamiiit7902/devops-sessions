@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cd-demo-staging
+  namespace: app-staging
+  labels:
+    app: app-staging
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cd-demo
+      env: staging
+  template:
+    metadata:
+      labels:
+        app: cd-demo
+        env: staging
+      annotations:
+        deployment.kubernetes.io/revision: "v1"
+    spec:
+      containers:
+        - name: cd-demo
+          image: aaamiiit/cd-app:v1
+          ports:
+            - containerPort: 5000
+          env:
+            - name: APP_ENV
+              value: "staging"
+            - name: APP_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['deployment.kubernetes.io/revision']
+            - name: APP_COLOR
+              value: "blue"

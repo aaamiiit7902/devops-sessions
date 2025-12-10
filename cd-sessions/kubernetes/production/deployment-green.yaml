@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cd-demo-green
+  namespace: app-production
+  labels:
+    app: app-production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cd-demo
+      env: production
+      color: green
+  template:
+    metadata:
+      labels:
+        app: cd-demo
+        env: production
+        color: green
+      annotations:
+        deployment.kubernetes.io/revision: "v2"
+    spec:
+      containers:
+        - name: cd-demo
+          image: aaamiiit/cd-app:v1
+          ports:
+            - containerPort: 5000
+          env:
+            - name: APP_ENV
+              value: "production"
+            - name: APP_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['deployment.kubernetes.io/revision']
+            - name: APP_COLOR
+              value: "green"

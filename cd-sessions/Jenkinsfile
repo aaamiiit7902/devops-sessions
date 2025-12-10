@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+    environment {
+        DOCKERHUB_CREDENTIALS = 'dockerhub-creds'
+        DOCKERHUB_USERNAME = 'aaamiiit'
+        IMAGE_NAME = '${DOCKERHUB_USERNAME}/cd-app'
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
+        DEPLOYMENT_STRATEGY = 'bluegreen' // or canary
+        NEW_COLOR = 'blue' // or green
+        OLD_COLOR = 'green' // or blue
+    }
+    stages{
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                sh '''
+                    cd cd-sessions/app
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install -r --no-cache-dir requirements.txt
+
+                    python -c "import server; print('Server module imported successfully')"
+                '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def commitID = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    env.IMAGE_TAG = commitID
+                }
+                sh '''
+                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} cd-sessions
+                '''
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS, passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'DOCKERHUB_USER')]) {
+                    sh '''
+                        echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
+                        docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                        docker logout
+                    '''
+                }
+            }
+        }
+    }   
+}
