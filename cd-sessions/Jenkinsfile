@@ -104,7 +104,10 @@ pipeline {
             }
         }
 
-        stage('Update Kubernetes Manifests for Staging') {
+        stage('Update Kubernetes Manifests for Production') {
+            when {
+                expression { env.DEPLOYMENT_STRATEGY == 'bluegreen' }
+            }
             steps {
                 sh '''
                     cd cd-sessions/kubernetes/production
