@@ -85,13 +85,13 @@ pipeline {
                     def url = sh(script: "minikube service cd-demo-staging -n app-staging --url", returnStdout: true).trim()
                     echo "Staging url: ${url}"
 
-                    sh '''
+                    sh """
                         for i in \$(seq 1 5); do
                             echo "request \$i:"
                             curl -s ${url} || exit 1
                             sleep 2
                         done
-                    '''
+                    """
                 }
             }
         }
