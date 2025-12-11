@@ -6,7 +6,7 @@ metadata:
   labels:
     app: app-production
 spec:
-  replicas: 3
+  replicas: 5
   selector:
     matchLabels:
       app: cd-demo
@@ -19,11 +19,11 @@ spec:
         env: production
         color: green
       annotations:
-        deployment.kubernetes.io/revision: "v2"
+        deployment.kubernetes.io/revision: "replace-this-version"
     spec:
       containers:
         - name: cd-demo
-          image: aaamiiit/cd-app:v1
+          image: aaamiiit/cd-app:replace-this-version
           ports:
             - containerPort: 5000
           env:

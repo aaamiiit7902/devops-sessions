@@ -17,11 +17,11 @@ spec:
         env: production
         track: canary
       annotations:
-        deployment.kubernetes.io/revision: "v2"
+        deployment.kubernetes.io/revision: "replace-this-version"
     spec:
       containers:
         - name: cd-demo
-          image: aaamiiit/cd-app:v1
+          image: aaamiiit/cd-app:replace-this-version
           ports:
             - containerPort: 5000
           env:

@@ -78,6 +78,73 @@ pipeline {
                 '''
             }
         }
+
+        stage('Smoke test on staging'){
+            steps {
+                script {
+                    def url = sh(script: "minikube service cd-demo-staging -n app-staging --url", returnStdout: true).trim()
+                    echo "Staging url: ${url}"
+
+                    sh '''
+                        for i in {1..5}; do
+                            echo "Attempt $i: Checking application"
+                            curl -s ${url} || exit 1
+                            sleep 2
+                        done
+                    '''
+                }
+            }
+        }
+
+        stage ("manual approval for production deployment") {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    input message: "Deploy ${env.IMAGE_TAG} to Production using ${DEPLOYMENT_STRATEGY} strategy?"
+                }
+            }
+        }
+
+        stage('Update Kubernetes Manifests for Staging') {
+            steps {
+                sh '''
+                    cd cd-sessions/kubernetes/production
+                    sed -i "s|replace-this-version|${IMAGE_TAG}|g" deployment-${NEW_COLOR}.yaml
+                '''
+            }
+        }
+
+        stage("deployment to production - blue-green"){
+            when {
+                expression { env.DEPLOYMENT_STRATEGY == 'bluegreen' }
+            }
+            steps {
+                script {
+                    if (env.NEW_COLOR != 'blue' && env.NEW_COLOR != 'green') {
+                        error "Invalid NEW_COLOR value: ${env.NEW_COLOR}. It must be either 'blue' or 'green'."
+                    }
+
+                    sh '''
+                        echo "Applying ${NEW_COLOR} deployment to production"
+                        cd cd-sessions/kubernetes/production
+                        k apply -f deployment-${NEW_COLOR}.yaml -n app-production
+
+                        echo "Waiting for ${NEW_COLOR} deployment to stabilize..."
+                        kubectl rollout status deployment/cd-demo-${NEW_COLOR} -n app-production --timeout=120s
+
+                        echo "applying base service"
+                        kubectl apply -f service.yaml -n app-production
+
+                        echo "Switching traffic to ${NEW_COLOR} deployment"
+                        kubectl patch service cd-demo-bluegreen -n app-production -p '{"spec":{"selector":{"color":"'"${NEW_COLOR}"'"}}}'
+
+                        echo "Scaling down old version deployment"
+                        kubectl scale deployment cd-demo-${OLD_COLOR} --replicas=1 -n app-production
+
+                    '''
+                }
+            }
+        }
+
     }
     post {
         always {
