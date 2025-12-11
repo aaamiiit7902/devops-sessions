@@ -148,6 +148,23 @@ pipeline {
             }
         }
 
+        stage('Smoke test on Production'){
+            steps {
+                script {
+                    def prod_url = sh(script: "minikube service cd-demo-bluegreen -n app-production --url", returnStdout: true).trim()
+                    echo "Production url: ${prod_url}"
+
+                    sh """
+                        for i in \$(seq 1 5); do
+                            echo "request \$i:"
+                            curl -s ${prod_url} || exit 1
+                            sleep 2
+                        done
+                    """
+                }
+            }
+        }
+
     }
     post {
         always {
