@@ -129,7 +129,7 @@ pipeline {
                     sh '''
                         echo "Applying ${NEW_COLOR} deployment to production"
                         cd cd-sessions/kubernetes/production
-                        k apply -f deployment-${NEW_COLOR}.yaml -n app-production
+                        kubectl apply -f deployment-${NEW_COLOR}.yaml -n app-production
 
                         echo "Waiting for ${NEW_COLOR} deployment to stabilize..."
                         kubectl rollout status deployment/cd-demo-${NEW_COLOR} -n app-production --timeout=120s
