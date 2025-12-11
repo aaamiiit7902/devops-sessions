@@ -5,9 +5,10 @@ pipeline {
         DOCKERHUB_USERNAME = 'aaamiiit'
         IMAGE_NAME = "${DOCKERHUB_USERNAME}/cd-app"
         KUBECONFIG = '/var/lib/jenkins/.kube/config'
-        DEPLOYMENT_STRATEGY = 'bluegreen' // or canary
+        DEPLOYMENT_STRATEGY = 'canary' // or canary
         NEW_COLOR = 'blue' // or green
         OLD_COLOR = 'green' // or blue
+        CANARY = 'stable'  // small
     }
     stages{
         stage('Checkout') {
@@ -105,13 +106,11 @@ pipeline {
         }
 
         stage('Update Kubernetes Manifests for Production') {
-            when {
-                expression { env.DEPLOYMENT_STRATEGY == 'bluegreen' }
-            }
             steps {
                 sh '''
                     cd cd-sessions/kubernetes/production
                     sed -i "s|replace-this-version|${IMAGE_TAG}|g" deployment-${NEW_COLOR}.yaml
+                    sed -i "s|replace-this-version|${IMAGE_TAG}|g" deployment-canary-${CANARY}.yaml
                 '''
             }
         }
@@ -153,22 +152,20 @@ pipeline {
                 expression { env.DEPLOYMENT_STRATEGY == 'canary' }
             }
             steps {
-                sh '''
+                sh """
                     echo "Applying canary deployment to production"
                     cd cd-sessions/kubernetes/production
-                    kubectl apply -f deployment-canary.yaml -n app-production
-                    kubectl apply -f deployment-canary-small.yaml -n app-production
+                    kubectl apply -f deployment-canary-${CANARY}.yaml -n app-production
 
                     echo "Waiting for canary deployment to stabilize..."
-                    kubectl rollout status deployment/cd-demo-canary -n app-production --timeout=120s
-                    kubectl rollout status deployment/cd-demo-stable -n app-production --timeout=120s
+                    kubectl rollout status deployment/cd-demo-canary-${CANARY} -n app-production --timeout=120s
 
                     echo "applying base service"
                     kubectl apply -f service.yaml -n app-production
 
                     echo "Traffic will be split between stable and canary versions based on service configuration."
 
-                '''
+                """
             }
         }
 
@@ -179,6 +176,26 @@ pipeline {
             steps {
                 script {
                     def prod_url = sh(script: "minikube service cd-demo-bluegreen -n app-production --url", returnStdout: true).trim()
+                    echo "Production url: ${prod_url}"
+
+                    sh """
+                        for i in \$(seq 1 5); do
+                            echo "request \$i:"
+                            curl -s ${prod_url} || exit 1
+                            sleep 2
+                        done
+                    """
+                }
+            }
+        }
+
+        stage('Smoke test on Production- canary'){
+            when {
+                expression { env.DEPLOYMENT_STRATEGY == 'canary' }
+            }
+            steps {
+                script {
+                    def prod_url = sh(script: "minikube service cd-demo-canary -n app-production --url", returnStdout: true).trim()
                     echo "Production url: ${prod_url}"
 
                     sh """

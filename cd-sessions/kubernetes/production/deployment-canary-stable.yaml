@@ -7,7 +7,7 @@ spec:
   replicas: 4
   selector:
     matchLabels:
-      app: cd-demo
+      app: cd-demo-canary-stable
       env: production
       track: stable
   template:
