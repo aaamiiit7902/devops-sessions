@@ -148,7 +148,34 @@ pipeline {
             }
         }
 
+        stage("deployment to production - canary"){
+            when {
+                expression { env.DEPLOYMENT_STRATEGY == 'canary' }
+            }
+            steps {
+                sh '''
+                    echo "Applying canary deployment to production"
+                    cd cd-sessions/kubernetes/production
+                    kubectl apply -f deployment-canary.yaml -n app-production
+                    kubectl apply -f deployment-canary-small.yaml -n app-production
+
+                    echo "Waiting for canary deployment to stabilize..."
+                    kubectl rollout status deployment/cd-demo-canary -n app-production --timeout=120s
+                    kubectl rollout status deployment/cd-demo-stable -n app-production --timeout=120s
+
+                    echo "applying base service"
+                    kubectl apply -f service.yaml -n app-production
+
+                    echo "Traffic will be split between stable and canary versions based on service configuration."
+
+                '''
+            }
+        }
+
         stage('Smoke test on Production'){
+            when {
+                expression { env.DEPLOYMENT_STRATEGY == 'bluegreen' }
+            }
             steps {
                 script {
                     def prod_url = sh(script: "minikube service cd-demo-bluegreen -n app-production --url", returnStdout: true).trim()
