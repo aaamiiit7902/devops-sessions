@@ -86,11 +86,11 @@ pipeline {
                     echo "Staging url: ${url}"
 
                     sh '''
-                        for i in {1..5}; do
-                            echo "Attempt $i: Checking application"
+                        for i in \$(seq 1 5); do
+                            echo "request \$i:"
                             curl -s ${url} || exit 1
                             sleep 2
-                        done
+                        
                     '''
                 }
             }
