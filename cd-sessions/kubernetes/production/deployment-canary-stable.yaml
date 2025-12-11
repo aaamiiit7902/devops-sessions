@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cd-demo-stable
+  name: cd-demo-canary-stable
   namespace: app-production
 spec:
   replicas: 4
