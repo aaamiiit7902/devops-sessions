@@ -156,6 +156,7 @@ pipeline {
                     echo "Applying canary deployment to production"
                     cd cd-sessions/kubernetes/production
                     kubectl apply -f deployment-canary-${CANARY}.yaml -n app-production
+                    kubectl apply -f service-canary.yaml -n app-production
 
                     echo "Waiting for canary deployment to stabilize..."
                     kubectl rollout status deployment/cd-demo-canary-${CANARY} -n app-production --timeout=120s
