@@ -5,7 +5,7 @@ import subprocess
 app = Flask(__name__)
 
 #BAD HARDCODING OF SECRET
-API_KEY = "thi_is_a_secret_api_key"
+API_KEY = "asdasdasdasda-sdajkhdjks"
 
 @app.get("/")
 def hello():
