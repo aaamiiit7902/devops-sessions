@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 #BAD HARDCODING OF SECRET
 API_KEY = "asdasdasdasda-sdajkhdjks"
+password = "adasdas-sadj-sdkka@kajs"
 
 @app.get("/")
 def hello():
