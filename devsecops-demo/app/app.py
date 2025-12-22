@@ -14,7 +14,7 @@ def hello():
 @app.get("/ping")
 def ping():
     host = request.args.get("host", "127.0.0.1")
-    out = subprocess.run(["ping", "-c", 1, {host}], shell=True, text=True)
+    out = subprocess.check_output(f"ping -c 1 {host}", shell=True, text=True)
     return out
 
 if __name__ == "__main__":
