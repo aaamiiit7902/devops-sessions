@@ -5,7 +5,7 @@ import subprocess
 app = Flask(__name__)
 
 #BAD HARDCODING OF SECRET
-API_KEY = "asdasdasdasda-sdajkhdjks"
+cohere-api-token = "asdasdasdasda-sdajkhdjks"
 password = "adasdas-sadj-sdkka@kajs"
 
 @app.get("/")
