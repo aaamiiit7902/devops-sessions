@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-logger
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-logger
+  template:
+    metadata:
+      labels:
+        app: demo-logger
+    spec:
+      containers:
+        - name: demo-logger
+          image: demo-logger:1.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SERVICE_NAME
+              value: "demo-logger"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"

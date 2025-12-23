@@ -1,14 +1,76 @@
-apiVersion: kibana.k8s.elastic.co/v1
-kind: Kibana
+apiVersion: v1
+kind: Service
 metadata:
-  name: kb
+  name: kibana
   namespace: logging
 spec:
-  version: 8.13.4
-  count: 1
-  elasticsearchRef:
-    name: es
-  podTemplate:
+  selector:
+    app: kibana
+  ports:
+    - name: http
+      port: 5601
+      targetPort: 5601
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
     spec:
       containers:
-      - name: kibana
+        - name: kibana
+          image: docker.io/kibana:8.11.3
+          ports:
+            - name: http
+              containerPort: 5601
+          env:
+            - name: SERVER_HOST
+              value: "0.0.0.0"
+            - name: ELASTICSEARCH_HOSTS
+              value: "http://elasticsearch.logging.svc.cluster.local:9200"
+            - name: ELASTICSEARCH_REQUESTTIMEOUT
+              value: "120000"
+            - name: XPACK_FLEET_ENABLED
+              value: "false"
+            - name: XPACK_SECURITY_SOLUTION_ENABLED
+              value: "false"
+            - name: XPACK_CLOUD_SECURITY_POSTURE_ENABLED
+              value: "false"
+            - name: XPACK_CLOUD_DEFEND_ENABLED
+              value: "false"
+            - name: XPACK_REPORTING_ENABLED
+              value: "false"
+            - name: XPACK_APM_ENABLED
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /api/status
+              port: 5601
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /api/status
+              port: 5601
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "512Mi"
+            limits:
+              cpu: "600m"
+              memory: "900Mi"

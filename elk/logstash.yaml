@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-pipeline
+  namespace: logging
+data:
+  logstash.conf: |
+    input {
+      beats { port => 5044 }
+    }
+
+    filter {
+      json {
+        source => "message"
+        target => "app"
+        skip_on_invalid_json => true
+      }
+
+      mutate {
+        add_field => { "k8s_namespace" => "%{[kubernetes][namespace]}" }
+        add_field => { "k8s_pod" => "%{[kubernetes][pod][name]}" }
+        add_field => { "k8s_container" => "%{[kubernetes][container][name]}" }
+      }
+    }
+
+    output {
+      elasticsearch {
+        hosts => ["http://elasticsearch.logging.svc.cluster.local:9200"]
+        index => "demo-logs-%{+YYYY.MM.dd}"
+      }
+      stdout { codec => rubydebug }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash
+  namespace: logging
+spec:
+  selector:
+    app: logstash
+  ports:
+    - name: beats
+      port: 5044
+      targetPort: 5044
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+        - name: logstash
+          image: docker.elastic.co/logstash/logstash:8.11.3-arm64
+          ports:
+            - containerPort: 5044
+          env:
+            - name: LS_JAVA_OPTS
+              value: "-Xms512m -Xmx512m"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "700Mi"
+            limits:
+              cpu: "800m"
+              memory: "1200Mi"
+          volumeMounts:
+            - name: pipeline
+              mountPath: /usr/share/logstash/pipeline/logstash.conf
+              subPath: logstash.conf
+      volumes:
+        - name: pipeline
+          configMap:
+            name: logstash-pipeline

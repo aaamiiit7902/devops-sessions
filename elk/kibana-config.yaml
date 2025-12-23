@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-config
+data:
+  kibana.yml: |
+    server.host: 0.0.0.0
+    elasticsearch.hosts: ["http://elasticsearch.logging.svc.cluster.local:9200"]
+
+    telemetry.enabled: false
+    telemetry.optIn: false
+
+    xpack.fleet.enabled: false
+    xpack.fleet.agents.enabled: false
+    xpack.securitySolution.enabled: false
+    xpack.cloud_defend.enabled: false
+    xpack.cloudSecurityPosture.enabled: false
+    xpack.observability.enabled: false
+    xpack.apm.enabled: false
+    xpack.reporting.enabled: false
+    xpack.ml.enabled: false
+
+    monitoring.kibana.collection.enabled: false
+    xpack.monitoring.collection.enabled: false
+
+    xpack.alerting.enabled: false
+    xpack.actions.enabled: false
+    xpack.ruleRegistry.enabled: false
