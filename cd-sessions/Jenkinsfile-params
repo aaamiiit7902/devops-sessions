@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+    parameters {
+        string(
+            name: 'USERNAME',
+            defaultValue: 'aaamiiit',
+            description: 'Basic Username'
+        )
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['development', 'staging', 'production'],
+            description: 'Select the deployment environment'
+        )
+        booleanParam(
+            name: 'DEPLOY_PROD',
+            defaultValue: false,
+            description: 'Deploy to Production environment'
+        )
+        string(
+            name: 'VERSION',
+            defaultValue: 'v1.0.0',
+            description: 'Version tag for the Docker image'
+        )
+    }
+
+    stages {
+        stage('Print the params') {
+            steps {
+                echo "USERNAME: ${params.USERNAME}"
+                echo "ENVIRONMENT: ${params.ENVIRONMENT}"
+                echo "Deploy to Production: ${params.DEPLOY_PROD}"
+                echo "VERSION: ${params.VERSION}"
+            }
+        }
+    }
+}
